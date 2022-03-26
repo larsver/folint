@@ -1,10 +1,5 @@
-# folint
-
-
 README for FOLint 
 =============================================
-
-**It's not just a linter that annoys you!**
 
 FOLint is a linting tool for FO(·) which looks for errors and helps enforcing a coding standard.
 
@@ -18,3 +13,10 @@ Currently FOLint only available on testPyPI (https://test.pypi.org/project/folin
 FOLint can be simply installed by running::
 
     pip install -i https://test.pypi.org/simple/ folint
+
+
+FOLint in editors
+-------
+* Vim : https://gitlab.com/Vadevesi/folint-vim
+* Notepad++ : (in progress)
+* VSCode : (in progress)
