@@ -146,7 +146,7 @@ class ASTNode(object):
         print(spaties*" "+type(self).__name__+": ",self)
 
     def mijnCheck(self,fouten):
-        print("type check:"+type(self).__name__+": ",self)
+        print("SCA check:"+type(self).__name__+": ",self)
 
 
 class Annotations(ASTNode):
@@ -1041,13 +1041,13 @@ class AComparison(Operator):
                     fouten.append((self,f"Comparison of 2 diffent types : {type1} and {type2}","Warning"))
                 if (cat == 4):  #cat(4) ERROR
                     fouten.append((self,f"Comparison of 2 diffent types : {type1} and {type2}","Error"))  
-                #fouten.append((self,f"Comparison of 2 diffent types: {type1} and {type2}","Error"))   
+
         if (type1 is None and type2 is None):
             # print(self)
             # pprint(attributes(self))
             if not(hasattr(self, 'parent')):
                 print(self)
-                pprint(attributes(self))
+                # pprint(attributes(self))
             fouten.append((self,f"Comparison of 2 unknow types: {type1} and {type2}","Warning"))  
 
         #SCA check voor kind nodes
@@ -1182,10 +1182,24 @@ class AUnary(Expression):
                      for e in self.sub_exprs)
         return self.update_exprs(sub_exprs).annotate1()
 
+    def mijnAST(self,spaties):
+        print(spaties*" "+type(self).__name__+": ",self) 
+        # pprint(attributes(self))
+        for sub in self.sub_exprs:
+            sub.mijnAST(spaties+5)
+
+    def mijnCheck(self,fouten):
+        # print("check: "+type(self).__name__+": ",self)
+        if (isinstance(self.f, AppliedSymbol) and self.f.is_enumeration=='in'):
+            if (hasattr(self,"parent")):
+                fouten.append((self,f"Style guide check, expected brackets, like this {self} ","Warning"))
+            # else :
+                # print("AUnary with no parent!")
+           
+        for sub in self.sub_exprs:
+            sub.mijnCheck(fouten)
+
     def mijnGetType(self):
-        """print(self,":",type(self))
-        pprint(attributes(self))
-        print("ok")"""
         return self.type
 
 def NOT(expr):
@@ -1404,7 +1418,16 @@ class AppliedSymbol(Expression):
             else:
                 return OR([comp, self])
 
+    def mijnAST(self,spaties):
+        print(spaties*" "+type(self).__name__+": ",self) 
+        if (self.in_enumeration != None):
+            self.in_enumeration.mijnAST(spaties+5)
+        for sub in self.sub_exprs:
+            sub.mijnAST(spaties+5)
+
     def mijnCheck(self,fouten):
+        # print("check: "+type(self).__name__+": ",self)
+
         #check op juiste aantal argumenten
         if (self.decl.arity != len(self.sub_exprs)): 
             if (self.code != str(self.original) ): 
@@ -1424,6 +1447,15 @@ class AppliedSymbol(Expression):
                     else :
                         fouten.append((self,f"Argument of wrong type : expected type= {typeSymbol_to_String(self.decl.sorts[i].type)} <=> given type= {typeSymbol_to_String(self.sub_exprs[i].mijnGetType())}","Error"))
                     break; #so only 1 error message 
+
+
+        # check if elementen in enumeratie are of correct type, vb Lijn() in {Belgie}. expected type Kleur, Belgie is of type Land
+        if (self.is_enumeration =='in'):
+            for i in self.in_enumeration.tuples :
+                if (self.decl.type != i.args[0].mijnGetType()):
+                    fouten.append((i.args[0],f"Element of wrong type : expected type= {typeSymbol_to_String(self.decl.type)} <=> given type= {typeSymbol_to_String(i.args[0].mijnGetType())}","Error"))
+                    break
+
 
         for sub in self.sub_exprs:
             sub.mijnCheck(fouten)
@@ -1611,17 +1643,12 @@ class Brackets(Expression):
     def __str1__(self): return str(self)
 
     def mijnCheck(self, fouten):
-        # print("brackets",self,":",type(self))
+        # print("check: "+type(self).__name__+": ",self)
         if (isinstance(self.f,Brackets)):
-            fouten.append((self,f"To much brackets!","Warning"))
+            fouten.append((self,f"Style guide, To much brackets!","Warning"))
         return super().mijnCheck(fouten)
 
 
     def mijnGetType(self):
-        # pprint(attributes(self))
-        # print(self.f,":",type(self.f))
-        # print(self.f.mijnGetType(),":",type(self.f.mijnGetType()))
-        # pprint(attributes(self.f))
         return self.f.mijnGetType()
         #return self.type        
-

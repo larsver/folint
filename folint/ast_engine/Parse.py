@@ -62,6 +62,9 @@ def attributes(obj):
     return {
         name: getattr(obj, name) for name in dir(obj)
         if name[0] != '_' and name not in disallowed_names and hasattr(obj, name)}
+def builtIn_type(elem):     #kijkt of het meegegeven type builtIn type is (return true or false)
+    listOfSbuildIn = ["ℤ" , "𝔹", "ℝ", "Concept", "Int", "Bool", "Real", "Date"]
+    return elem in listOfSbuildIn
 
 def str_to_IDP(atom, val_string):
     """cast a string value for 'atom into an Expr object, or None
@@ -343,6 +346,12 @@ class Vocabulary(ASTNode):
         for i in self.declarations:
             i.mijnAST(spaties+5)
 
+    def mijnCheck(self,fouten):
+        # print("SCA check: "+type(self).__name__+": ",self.name)
+        # pprint(attributes(self))
+        for i in self.declarations:
+            i.mijnCheck(fouten)
+
 
 class Import(ASTNode):
     def __init__(self, **kwargs):
@@ -423,7 +432,25 @@ class TypeDeclaration(ASTNode):
             i.mijnAST(spaties+5)
         if self.interpretation is not None:
             self.interpretation.mijnAST(spaties+5)
-        #self.out.mijnAST(spaties+5)
+
+    def mijnCheck(self,fouten):
+        # print("check: "+type(self).__name__+": ",self.name)
+
+        # style guide check : capital letter for type 
+        if (self.name[0].islower()):
+            fouten.append((self,f"Style guide check, type name need to start with a capital letter ","Warning"))
+
+        # check if type has interpretation, if not check if in structures the type has given an interpretation
+        if (self.interpretation is None and not(builtIn_type(self.name))):
+            structs = self.block.idp.get_blocks(self.block.idp.structures)
+            list =[]
+            for i in structs:
+                list.append(i.name)
+            for s in structs :
+                if (s.vocab_name == self.block.name) :
+                    if not(self.name in s.interpretations):
+                        fouten.append((self,f"Expected a interpretation for type {self.name} in Vocabularie {self.block.name} or in all structures {list} ","Error"))  
+                        break
 
 
 class SymbolDeclaration(ASTNode):
@@ -545,6 +572,13 @@ class SymbolDeclaration(ASTNode):
         for i in self.sorts:
             i.mijnAST(spaties+5)
         self.out.mijnAST(spaties+5)
+
+    def mijnCheck(self,fouten):
+        # print("SCA check: "+type(self).__name__+": ",self.name)
+        # print(self.name)
+        if (self.name[0].isupper()):
+            fouten.append((self,f"Style guide check, predicate/function name need to start with a lower letter ","Warning"))
+
 
 Type = Union[TypeDeclaration, SymbolDeclaration]
 
@@ -1231,8 +1265,12 @@ class Call1(ASTNode):
             a.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        if (self.name != "pretty_print" and isinstance(self.parent,Procedure)):   #check if pretty_print is used
-            fouten.append((self,f"No pretty_print used!","Warning"))
+        lijst_inferenties = ["model_check","model_expand","model_propagate"]
+        if (self.name in lijst_inferenties):
+            if (self.parent.name != "pretty_print"):    #check if pretty_print is used
+                fouten.append((self,f"No pretty_print used!","Warning"))
+        # if (self.name != "pretty_print" and isinstance(self.parent,Procedure)):   #check if pretty_print is used
+            # fouten.append((self,f"No pretty_print used!","Warning"))
         if (self.name == "model_check"):  #check if correct amount of arguments used by model_check
             if (len(self.args) > 2 or len(self.args) == 0):
                 fouten.append((self,f"Wrong number of arguments for model_check: given {len(self.args)} <-> expected {1} or {2}","Error"))
