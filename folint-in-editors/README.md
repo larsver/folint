@@ -1,0 +1,2 @@
+# FOlint in editors
+
