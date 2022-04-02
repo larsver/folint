@@ -39,3 +39,12 @@ the second one = "Error: line %LINE% - colStart %CHAR%".
 Then you can choose the colors of errors/warnings.
 
 If everything is done the output line are clickable and show the corresponding line in the code were the warning/error is located.
+
+Syntax Highlighting
+-------
+You can easily add syntax highlighting for FOdot in Notepadd++. 
+
+First you open Notepad++ and click on Syntaxis. 
+Then choose custom syntax. Click import and choose FOdot_SyntaxHighlighting.xml file.
+
+Now you open an .idp file an choose in Syntaxis tab the FOdot syntax highligting.
