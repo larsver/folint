@@ -7,7 +7,6 @@
         "label": "FOLint",
         "type": "shell",
         "command": "python",
-        // "args": [ "-m", "folint.SCA", "${file}", "--Add-filename"],
         "args": [ "-m", "folint.SCA", "${file}", "--Add-filename"],
         "options": { "cwd": "${fileDirname}" },
         "presentation": { "clear": true },
@@ -16,7 +15,6 @@
           // "fileLocation": ["relative", "${workspaceFolder}"],
           "fileLocation" : "autoDetect",
           "pattern": {
-            // "regexp": "(Warning|Error): line (\\d+) - colStart (\\d+) - colEnd (\\d+) => (.*)",
             "regexp": "^(.*): (Warning|Error): line (\\d+) - colStart (\\d+) - colEnd (\\d+) => (.*)",
             "file": 1,
             "severity": 2,
