@@ -17,6 +17,4 @@ FOLint can be simply installed by running::
 
 FOLint in editors
 -------
-* Vim : https://gitlab.com/Vadevesi/folint-vim
-* Notepad++ : (in progress)
-* VSCode : (in progress)
+Use of folint in editors, see folder folin-in-editors.
