@@ -19,7 +19,7 @@ def attributes(obj):
     return {
       name: getattr(obj, name) for name in dir(obj)
         if name[0] != '_' and name not in disallowed_names and hasattr(obj, name)}
-      
+    
 def output(lijst,soort):
     """ Output of error/warning strings in format 'warning/error: line .. - colStart .. - colEnd=> message' """
     print(f"-- {soort} : aantal = {len(lijst)}")
@@ -58,12 +58,12 @@ def sca(idp):
     print("\n---------- Procedure Check ----------")
     for p in idp.procedures:        #check all procedures
         print("-----",p)
-        P = idp.get_blocks(p)       #get block
+        P = idp.get_blocks(p)       #get procedure block
         doe_de_check(P[0])          #check
     print("\n---------- Vocabulary Check ----------")
     for v in idp.vocabularies:      #check all procedures
         print("-----",v)
-        V = idp.get_blocks(v)       #get block
+        V = idp.get_blocks(v)       #get vocabulary block
         doe_de_check(V[0])          #check
 
 def main():
@@ -92,11 +92,10 @@ def main():
         if sys.argv[1].endswith(".idp"):
             idp = IDP.from_file(sys.argv[1])    #parse idp file to AST
             if args.AST:
-                idp.mijnAST(0)                     #print AST van file
+                idp.mijnAST(0)                  #print AST van file
             sca(idp)                            #doe SCA
         else:
             print("Expected an .idp file")
-
     except IDPZ3Error as e1:
         res1 = e1.args[0].split(': ', 1)
         res = res1[0].split()
@@ -106,19 +105,23 @@ def main():
         else:
             print(f"{res[0]}: line {res[3].strip(',')} - colStart {res[5].strip(':')} - colEnd {res[5].strip(':')} => {res1[1]}")
     except KeyError as e2:
-        print(e2)
-        pprint(attributes(e2))
-        print(e2.with_traceback)
+        # print(e2)
+        # pprint(attributes(e2))
         print("KeyError ERROR!!!")
+        if args.filename :
+            print(f"{filename}: Error: line {0} - colStart {0} - colEnd {0} => Key Error {e2}")
+        else :
+            print(f"Error: line {0} - colStart {0} - colEnd {0} => Key Error {e2}")
     except Exception as e:
         print("\n---------- Syntax Error ----------")
+        # print(e)
         if args.filename :
             print(f"{filename}: Error: line {e.line} - colStart {e.col} - colEnd {e.col} => {e.args}")
         else :
             print(f"Error: line {e.line} - colStart {e.col} - colEnd {e.col} => {e.args}")
+
     if args.timing:
         print(f"\nElapsed time: {format(time.time() - start_time)} seconds")
-
 
 if __name__ == "__main__":
     main()

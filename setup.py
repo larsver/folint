@@ -1,4 +1,5 @@
 import pathlib
+from importlib_metadata import entry_points
 from setuptools import find_packages, setup
 
 # The directory containing this file
@@ -10,7 +11,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="folint",
-    version="0.0.1.8",
+    version="0.0.1.9",
     description="Linter for FOdot used in the IDP-Z3 system",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -25,4 +26,7 @@ setup(
     include_package_data=True, 
     package_data={'': ['ast_engine/Idp.tx']},
     install_requires=["textX","z3-solver"],
+    entry_points = {
+      'console_scripts': ['folint=folint.SCA:main']
+    }
 )
