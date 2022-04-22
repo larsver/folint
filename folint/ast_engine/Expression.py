@@ -72,8 +72,10 @@ types vergelijken : 4 categorieen
 def typesVergelijken(type1,type2):
     if ((type1=="Int" and type2=="Real") or (type1=="Real" and type2=="Int")):  #soort (2)
         return 2
-    if not(builtIn_type(type1)) or not(builtIn_type(type2)):  #als geen specifieker type gevonden is
+    if (not(builtIn_type(type1)) and builtIn_type(type2)) or (builtIn_type(type1) and not(builtIn_type(type2))):  #als geen specifieker type gevonden is
         return 3 
+    if not(builtIn_type(type1)) and not(builtIn_type(type2)):
+        return 4
     WarMetBool = ["Int","Real"]
     if (type1=="Bool" and (type2 in WarMetBool)):
         return 3
@@ -565,10 +567,8 @@ class Expression(ASTNode):
             sub.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        #print("type check: "+type(self).__name__+": ",self)
         for sub in self.sub_exprs:
             sub.mijnCheck(fouten)
-
 
 
 class Symbol(Expression):
@@ -828,9 +828,6 @@ class AQuantification(Expression):
             sub.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("check: "+type(self).__name__+": ",self)
-        # print("check: "+type(self.f).__name__+": ",self.f)
-
         vars = set()
         for q in self.quantees: #get all variable in quantification
             for q2 in q.vars:
@@ -862,7 +859,6 @@ class AQuantification(Expression):
             elif (rechts.variables != vars):    #check if all vars in rechterdeel van AEquivalence
                 set3 = vars - links.variables
                 fouten.append((self.f,f"Common mistake, variable {set3.pop()} only occuring on one side of equivalence","Warning"))
-
 
         for sub in self.sub_exprs:
             sub.mijnCheck(fouten)
@@ -1008,20 +1004,10 @@ class AComparison(Operator):
                 and self.sub_exprs[1].value is not None
 
     def mijnCheck(self,fouten):
-        #print("mijnCheck :",self,":",type(self))
-        """for s in self.sub_exprs :
-            print("  ",s,":",type(s)," -> ",s.type,":",type(s.type))"""
-           
         type1 = self.sub_exprs[0].mijnGetType() #get type van linker lid
-        # print("   linker lid : ",type1," ",type(type1))
         type2 = self.sub_exprs[1].mijnGetType() #get type van rechter lid
-        #print("   rechter lid : ",type2," ",type(type2))
-
         type1 = typeSymbol_to_String(type1)  
         type2 = typeSymbol_to_String(type2)         
-        # print("   linker lid : ",type1," ",type(type1))
-        # print("   rechter lid : ",type2," ",type(type2))
-
         """
         types vergelijken : 4 categorieen
             (1) Dezelfde types
@@ -1030,7 +1016,6 @@ class AComparison(Operator):
             (4) Niet dezelfde types en mogen NIET vergeleken worden en kunnen NIET vergeleken worden (error)
         """
         if (type1 != type2 ):   #comparison van 2 verschillende types, categorieen (2),(3) en (4)
-            #print(self,":",type1,"--",type2)
             if (type1 is None):     #type linkerlid niet kunnen bepalen
                 fouten.append((self.sub_exprs[0],f"Could not determine the type of {self.sub_exprs[0]} ","Warning"))
             elif (type2 is None):   #type rechterlid niet kunnen bepalen 
@@ -1043,12 +1028,9 @@ class AComparison(Operator):
                     fouten.append((self,f"Comparison of 2 diffent types : {type1} and {type2}","Error"))  
 
         if (type1 is None and type2 is None):
-            # print(self)
-            # pprint(attributes(self))
             if not(hasattr(self, 'parent')):
                 print(self)
-                # pprint(attributes(self))
-            fouten.append((self,f"Comparison of 2 unknow types: {type1} and {type2}","Warning"))  
+            fouten.append((self.sub_exprs[0],f"Comparison of 2 unknow types: {type1} and {type2}","Warning"))  
 
         #SCA check voor kind nodes
         for sub in self.sub_exprs:
@@ -1062,7 +1044,6 @@ class ASumMinus(Operator):
 
     def mijnCheck(self, fouten):
         for i in range(0,len(self.sub_exprs)):
-
             if (self.sub_exprs[i].mijnGetType()=="𝔹" and self.sub_exprs[i-1].mijnGetType()=="𝔹"):   #optelling of aftrekking van booleans met elkaar
                 fouten.append((self,f"Sum or difference of two elements of type Bool","Error"))
                 break
@@ -1184,12 +1165,10 @@ class AUnary(Expression):
 
     def mijnAST(self,spaties):
         print(spaties*" "+type(self).__name__+": ",self) 
-        # pprint(attributes(self))
         for sub in self.sub_exprs:
             sub.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("check: "+type(self).__name__+": ",self)
         if (isinstance(self.f, AppliedSymbol) and self.f.is_enumeration=='in'):
             if (hasattr(self,"parent")):
                 fouten.append((self,f"Style guide check, expected brackets, like this {self} ","Warning"))
@@ -1251,8 +1230,6 @@ class AAggregate(Expression):
         return Expression.collect_nested_symbols(self, symbols, True)
 
     def mijnGetType(self):
-        # print(self,":",type(self))
-        # pprint(attributes(self))
         # return "Int"        #Sum zou altijd Int moeten zijn
         return self.type    #return type of AAggregate (in 'str')
 
@@ -1426,8 +1403,6 @@ class AppliedSymbol(Expression):
             sub.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("check: "+type(self).__name__+": ",self)
-
         #check op juiste aantal argumenten
         if (self.decl.arity != len(self.sub_exprs)): 
             if (self.code != str(self.original) ): 
@@ -1448,14 +1423,12 @@ class AppliedSymbol(Expression):
                         fouten.append((self,f"Argument of wrong type : expected type= {typeSymbol_to_String(self.decl.sorts[i].type)} <=> given type= {typeSymbol_to_String(self.sub_exprs[i].mijnGetType())}","Error"))
                     break; #so only 1 error message 
 
-
         # check if elementen in enumeratie are of correct type, vb Lijn() in {Belgie}. expected type Kleur, Belgie is of type Land
         if (self.is_enumeration =='in'):
             for i in self.in_enumeration.tuples :
                 if (self.decl.type != i.args[0].mijnGetType()):
                     fouten.append((i.args[0],f"Element of wrong type : expected type= {typeSymbol_to_String(self.decl.type)} <=> given type= {typeSymbol_to_String(i.args[0].mijnGetType())}","Error"))
                     break
-
 
         for sub in self.sub_exprs:
             sub.mijnCheck(fouten)
@@ -1553,7 +1526,6 @@ class Variable(Expression):
     def mijnGetType(self):
         if (self.sort is None):
             return self.sort        #return None als self.sort onbekend is
-        #return self.sort.decl.out.str # dit is het niet
         return self.sort.type       #returns specifieker type of Variable (als 'str')
         #return self.sort.str        #return type of Variable (als 'str')
 
@@ -1643,7 +1615,6 @@ class Brackets(Expression):
     def __str1__(self): return str(self)
 
     def mijnCheck(self, fouten):
-        # print("check: "+type(self).__name__+": ",self)
         if (isinstance(self.f,Brackets)):
             fouten.append((self,f"Style guide, To much brackets!","Warning"))
         return super().mijnCheck(fouten)

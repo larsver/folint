@@ -51,11 +51,12 @@ from .utils import (RESERVED_SYMBOLS, OrderedSet, NEWL, BOOL, INT, REAL, DATE, C
                     GOAL_SYMBOL, EXPAND, RELEVANT, ABS, IDPZ3Error,
                     CO_CONSTR_RECURSION_DEPTH, MAX_QUANTIFIER_EXPANSION)
 
-#mijnhelp imports en functie
+###############
+# help imports en functies
 from pprint import pprint
 from inspect import getmembers
 from types import FunctionType
-def attributes(obj):
+def attributes(obj):    #geeft al de attributen van een object
     disallowed_names = {
         name for name, value in getmembers(type(obj))
         if isinstance(value, FunctionType)}
@@ -65,6 +66,7 @@ def attributes(obj):
 def builtIn_type(elem):     #kijkt of het meegegeven type builtIn type is (return true or false)
     listOfSbuildIn = ["ℤ" , "𝔹", "ℝ", "Concept", "Int", "Bool", "Real", "Date"]
     return elem in listOfSbuildIn
+################
 
 def str_to_IDP(atom, val_string):
     """cast a string value for 'atom into an Expr object, or None
@@ -347,8 +349,6 @@ class Vocabulary(ASTNode):
             i.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("SCA check: "+type(self).__name__+": ",self.name)
-        # pprint(attributes(self))
         for i in self.declarations:
             i.mijnCheck(fouten)
 
@@ -426,16 +426,13 @@ class TypeDeclaration(ASTNode):
         if (str(self) > self.name):
             print(spaties*" "+type(self).__name__+":",self)
         else :
-            print(spaties*" "+type(self).__name__+":",self.name)
-            
+            print(spaties*" "+type(self).__name__+":",self.name)  
         for i in self.sorts:
             i.mijnAST(spaties+5)
         if self.interpretation is not None:
             self.interpretation.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("check: "+type(self).__name__+": ",self.name)
-
         # style guide check : capital letter for type 
         if (self.name[0].islower()):
             fouten.append((self,f"Style guide check, type name need to start with a capital letter ","Warning"))
@@ -574,8 +571,6 @@ class SymbolDeclaration(ASTNode):
         self.out.mijnAST(spaties+5)
 
     def mijnCheck(self,fouten):
-        # print("SCA check: "+type(self).__name__+": ",self.name)
-        # print(self.name)
         if (self.name[0].isupper()):
             fouten.append((self,f"Style guide check, predicate/function name need to start with a lower letter ","Warning"))
 
@@ -859,8 +854,6 @@ class Structure(ASTNode):
     def mijnAST(self,spaties):
         print(spaties*" "+type(self).__name__+": ",self) 
         for i in self.interpretations:
-            #print(spaties*" "+type(i).__name__+": ",i)
-            #print(spaties*" "+type(self.interpretations[i]).__name__,":",self.interpretations[i].name)
             self.interpretations[i].mijnAST(spaties+5)
 
 
@@ -927,7 +920,7 @@ class SymbolInterpretation(ASTNode):
     def mijnAST(self,spaties):
         print(spaties*" "+type(self).__name__+": ",self.name) 
         self.enumeration.mijnAST(spaties+5) 
-        #self.default.mijnAST(spaties+5) 
+
 
 class Enumeration(ASTNode):
     """Represents an enumeration of tuples of expressions.

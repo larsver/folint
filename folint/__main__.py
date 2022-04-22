@@ -119,6 +119,5 @@ def main():
     if args.timing:
         print(f"\nElapsed time: {format(time.time() - start_time)} seconds")
 
-
 if __name__ == "__main__":
     main()
