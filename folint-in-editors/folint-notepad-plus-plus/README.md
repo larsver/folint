@@ -51,4 +51,4 @@ Now you open an .idp file an choose in Syntaxis tab the FOdot syntax highligting
 
 Example
 -------
-![Example of folint in Notepad-plus-plus](/notepad_folint.png)
+![Example of folint in Notepad-plus-plus](notepad_folint.png)
