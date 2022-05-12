@@ -50,3 +50,6 @@ This will execute FOLint on you .idp file you have open. And some red and orange
 It is also possible to add a key binding to execute this task. Instead of manually execute the task.
 
 
+Example
+-------
+![Example of folint in VSCode](vscode_folint.png)

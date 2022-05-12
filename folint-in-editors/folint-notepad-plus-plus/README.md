@@ -48,3 +48,7 @@ First you open Notepad++ and click on Syntaxis.
 Then choose custom syntax. Click import and choose FOdot_SyntaxHighlighting.xml file.
 
 Now you open an .idp file an choose in Syntaxis tab the FOdot syntax highligting.
+
+Example
+-------
+![Example of folint in Notepad-plus-plus](/notepad_folint.png)

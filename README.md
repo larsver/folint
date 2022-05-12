@@ -17,4 +17,4 @@ FOLint can be simply installed by running::
 
 FOLint in editors
 -------
-Use of folint in editors, see folder folin-in-editors.
+Use of folint in editors, see folder folint-in-editors.
