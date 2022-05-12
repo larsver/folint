@@ -38,7 +38,7 @@ def output(lijst,soort):
 
 def doe_de_check(A):
     fouten = []
-    A.mijnCheck(fouten)
+    A.SCA_Check(fouten)
     warnings = []
     errors = []
     for i in fouten:            #splits warning en errors
@@ -50,6 +50,16 @@ def doe_de_check(A):
     output(warnings,"Warning")  #output warnings
 
 def sca(idp):
+    print("\n---------- Vocabulary Check ----------")
+    for v in idp.vocabularies:      #check all vocabularies
+        print("-----",v)
+        V = idp.get_blocks(v)       #get vocabulary block
+        doe_de_check(V[0])          #check
+    print("\n---------- Structure Check ----------")
+    for s in idp.structures:        #check all structures
+        print("-----",s)
+        V = idp.get_blocks(s)       #get structure block
+        doe_de_check(V[0])          #check
     print("\n---------- Theory Check ----------")
     for t in idp.theories:          #check all theories
         print("-----",t)
@@ -60,11 +70,7 @@ def sca(idp):
         print("-----",p)
         P = idp.get_blocks(p)       #get procedure block
         doe_de_check(P[0])          #check
-    print("\n---------- Vocabulary Check ----------")
-    for v in idp.vocabularies:      #check all procedures
-        print("-----",v)
-        V = idp.get_blocks(v)       #get vocabulary block
-        doe_de_check(V[0])          #check
+    
 
 def main():
     parser = argparse.ArgumentParser(description='SCA')
@@ -92,7 +98,7 @@ def main():
         if sys.argv[1].endswith(".idp"):
             idp = IDP.from_file(sys.argv[1])    #parse idp file to AST
             if args.AST:
-                idp.mijnAST(0)                  #print AST van file
+                idp.printAST(0)                  #print AST van file
             sca(idp)                            #doe SCA
         else:
             print("Expected an .idp file")
