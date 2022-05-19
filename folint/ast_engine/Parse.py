@@ -260,10 +260,10 @@ class IDP(ASTNode):
     def blockNameCheck(self,a) :
         if hasattr(a,'name'):
             for t in self.theories :
-                if (a.name == t):
+                if a.name == t:
                     return True
             for s in self.structures :
-                if (a.name == s):
+                if a.name == s:
                     return True
         return False
 
@@ -424,18 +424,18 @@ class TypeDeclaration(ASTNode):
         return self == other
 
     def printAST(self,spaties):
-        if (str(self) > self.name):
+        if str(self) > self.name:
             print(spaties*" "+type(self).__name__+":",self)
         else :
-            print(spaties*" "+type(self).__name__+":",self.name)  
+            print(spaties*" "+type(self).__name__+":",self.name)
         for i in self.sorts:
             i.printAST(spaties+5)
         if self.interpretation is not None:
             self.interpretation.printAST(spaties+5)
 
     def SCA_Check(self,fouten):
-        # style guide check : capital letter for type 
-        if (self.name[0].islower()):
+        # style guide check : capital letter for type
+        if self.name[0].islower():
             fouten.append((self,f"Style guide check, type name should start with a capital letter ","Warning"))
 
         # check if type has interpretation, if not check if in structures the type has given an interpretation
@@ -445,9 +445,9 @@ class TypeDeclaration(ASTNode):
             for i in structs:
                 list.append(i.name)
             for s in structs :
-                if (s.vocab_name == self.block.name) :
+                if s.vocab_name == self.block.name:
                     if not(self.name in s.interpretations):
-                        fouten.append((self,f"Expected an interpretation for type {self.name} in Vocabulary {self.block.name} or Structures {list} ","Error"))  
+                        fouten.append((self,f"Expected an interpretation for type {self.name} in Vocabulary {self.block.name} or Structures {list} ","Error"))
                         break
 
 
@@ -572,7 +572,8 @@ class SymbolDeclaration(ASTNode):
         self.out.printAST(spaties+5)
 
     def SCA_Check(self,fouten):
-        if (self.name[0].isupper()):
+        # style regel: func/pred namen met een kleine letter
+        if self.name[0].isupper():
             fouten.append((self,f"Style guide check, predicate/function name should start with a lower letter ","Warning"))
 
 
@@ -613,7 +614,7 @@ class TheoryBlock(ASTNode):
         return self.name
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for c in self.constraints:
             c.printAST(spaties+5)
         for d in self.definitions:
@@ -750,9 +751,9 @@ class Definition(ASTNode):
                 self.check(decl not in nested,
                            f"Inductively defined nested symbols are not supported yet: "
                            f"{decl.name}.")
-    
+
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for r in self.rules:
             r.printAST(spaties+5)
 
@@ -812,7 +813,7 @@ class Rule(ASTNode):
         return out
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for q in self.quantees:
             q.printAST(spaties+5)
         self.definiendum.printAST(spaties+5)
@@ -853,7 +854,7 @@ class Structure(ASTNode):
         return self.name
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for i in self.interpretations:
             self.interpretations[i].printAST(spaties+5)
 
@@ -923,100 +924,79 @@ class SymbolInterpretation(ASTNode):
             return out
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self.name) 
-        self.enumeration.printAST(spaties+5) 
-    
+        print(spaties*" "+type(self).__name__+": ",self.name)
+        self.enumeration.printAST(spaties+5)
+
     def SCA_Check(self,fouten):
-        #check de gedefinieerde functies, predicaten, constnatne en booleans
-        if (str(self.enumeration) == "" and not(self.is_type_enumeration) and not(self.symbol.decl.arity==0)):  #als functie of predicaat zonder elementen, als leeg
-            fouten.append((self,f"It is empty defined","Warning"))      
-        elif (not(isinstance(self.enumeration,(Ranges,FunctionEnum))) and not(self.is_type_enumeration)):   #als predicaat, const of boolean
-            if (self.symbol.decl.arity==0): #const en boolean
+        #check de gedefinieerde functies, predicaten, constanten en proposities
+        if (not(isinstance(self.enumeration,(Ranges,FunctionEnum))) and not(self.is_type_enumeration)):   #als predicaat, const of boolean
+            if self.symbol.decl.arity==0: #const en boolean
                 out_type = self.symbol.decl.out                                                 #out type functie
-                if (hasattr(out_type.decl,'enumeration')):      #als type geen built-in type is
+                if hasattr(out_type.decl,'enumeration'):      #als type geen built-in type is
                     out_type_waardes = str(out_type.decl.enumeration).replace(" ", "").split(',')   #waardes out type
-                    if (self.default.str not in out_type_waardes):
-                        fouten.append((self.default,f"Element of wrong type","Error"))  # element of wrong type used for const         
+                    if self.default.str not in out_type_waardes:
+                        fouten.append((self.default,f"Element of wrong type","Error"))  # element of wrong type used for const
             else :
                 opties = []
                 for i in self.symbol.decl.sorts:    #get alle waarde van argument types
                     opties.append(str(i.decl.enumeration).replace(" ", "").split(','))
                 for t in self.enumeration.tuples:
-                    for i in range(0,len(t.args),1):  #get elements
-                        if (str(t.args[i]) not in opties[i]):
-                            fouten.append((t.args[i],f"Element of wrong type","Error"))  # element of wrong type used in predicate
+                    if len(t.args) > self.symbol.decl.arity:    #als te veel input elementen
+                        fouten.append((t.args[0],f"To much input elements, expected {self.symbol.decl.arity}","Error"))
+                    else :
+                        for i in range(0,len(t.args),1):  #get elements
+                            if str(t.args[i]) not in opties[i]:
+                                fouten.append((t.args[i],f"Element of wrong type","Error"))  # element of wrong type used in predicate
 
-        if (isinstance(self.enumeration,FunctionEnum)):     #als functie 
+        if isinstance(self.enumeration,FunctionEnum):     #als functie
             out_type = self.symbol.decl.out                                                 #out type functie
             out_type_waardes = str(out_type.decl.enumeration).replace(" ", "").split(',')   #waardes out type
-            if (self.symbol.decl.arity == 1): #functie met 1 arg
-                arg1_type = self.symbol.decl.sorts[0]
-                arg1_type_waardes = str(arg1_type.decl.enumeration).replace(" ", "").split(',')
-                duplicates = []
-                for t in self.enumeration.tuples:
-                    if (str(t.value) not in out_type_waardes):  # als output element van verkeerd type
-                        fouten.append((t.value,f"Output element of wrong type, {str(t.value)}","Error"))
-                    if (len(t.args) > 2):    #als te veel input elementen
-                        fouten.append((t.args[0],f"To much input elements, expected {1}","Error"))      
-                    elif (str(t.args[0]) in arg1_type_waardes):
-                        arg1_type_waardes.remove(str(t.args[0]))
-                        duplicates.append(str(t.args[0])) #voeg de al gebruikt mogelijkheden toe
-                    else:
-                        if (str(t.args[0]) in duplicates):
-                            fouten.append((t.args[0],f"Wrong input element, duplicate {t.args[0]}","Error"))  #duplicate
-                        else :
-                            fouten.append((t.args[0],f"Element of wrong type, {str(t.args[0])}","Error"))
+            opties = []
+            for i in self.symbol.decl.sorts:    #get alle waarde van argument types
+                opties.append(str(i.decl.enumeration).replace(" ", "").split(','))
 
-                if (len(arg1_type_waardes) > 0 ): #als functie niet voledig
-                    fouten.append((self,f"Function not total defined, missing {arg1_type_waardes}","Error"))
-
-            elif (self.symbol.decl.arity > 1) : # functie met meerdere arg
-                opties = []
-                for i in self.symbol.decl.sorts:    #get alle waarde van argument types
-                    opties.append(str(i.decl.enumeration).replace(" ", "").split(','))
-
-                # bereken alle mogelijke combinaties
+            # bereken alle mogelijke combinaties
+            newlist = []
+            oudlist = opties[0]
+            for i in range(1,len(opties)):
                 newlist = []
-                oudlist = opties[0]
-                for i in range(1,len(opties)):
-                    newlist = []
-                    for a in oudlist:
-                        for b in opties[i]:
-                            hulp_element = []
-                            if (isinstance(a,list)):
-                                for c in a:
-                                    hulp_element.append(c)
-                            else :
-                                hulp_element.append(a)
-                            hulp_element.append(b)   
-                            newlist.append(hulp_element)
-                    oudlist = newlist
-                
-                mogelijkheden = oudlist
-                duplicates = []
-                for t in self.enumeration.tuples:
-                    if (str(t.value) not in out_type_waardes):  # als output element van verkeerd type
-                        fouten.append((t.value,f"Output element of wrong type, {str(t.value)}","Error"))
-                    elements = []
-                    for i in range(0,len(t.args)-1,1):  #get input elements
-                        if (i < len(opties) and (str(t.args[i]) not in opties[i])) :
-                            fouten.append((t.args[i],f"Element of wrong type","Error"))  # element of wrong type used
-                        elements.append(str(t.args[i]))
+                for a in oudlist:
+                    for b in opties[i]:
+                        hulp_element = []
+                        if isinstance(a,list):
+                            for c in a:
+                                hulp_element.append(c)
+                        else :
+                            hulp_element.append(a)
+                        hulp_element.append(b)
+                        newlist.append(hulp_element)
+                oudlist = newlist
 
-                    if (len(t.args) > self.symbol.decl.arity+1):    #als te veel input elementen
-                        fouten.append((t.args[0],f"To much input elements, expected {self.symbol.decl.arity}","Error")) 
-                    elif elements in mogelijkheden:   #als mogelijkheid geldig is
-                        mogelijkheden.remove(elements) #verwijder uit lijst om dupliates te vermijden
-                        duplicates.append(elements) #voeg de al gebruikt mogelijkheden toe
-                    else:             
-                                
-                        if (elements in duplicates):
-                            fouten.append((t.args[0],f"Wrong input elements, duplicate","Error"))  #duplicate
-                        else:
-                            fouten.append((t.args[0],f"Element of wrong type","Error"))  #wrong elements used
+            mogelijkheden = oudlist
+            duplicates = []
+            for t in self.enumeration.tuples:
+                if str(t.value) not in out_type_waardes:  # als output element van verkeerd type
+                    fouten.append((t.value,f"Output element of wrong type, {str(t.value)}","Error"))
+                elements = []
+                for i in range(0,len(t.args)-1,1):  #get input elements
+                    if (i < len(opties) and (str(t.args[i]) not in opties[i])) :
+                        fouten.append((t.args[i],f"Element of wrong type, {str(t.args[i])}","Error"))  # element of wrong type used
+                    elements.append(str(t.args[i]))
+                if len(t.args) > self.symbol.decl.arity+1:    #als te veel input elementen
+                    fouten.append((t.args[0],f"To much input elements, expected {self.symbol.decl.arity}","Error"))
+                elif elements in mogelijkheden:   #als mogelijkheid geldig is
+                    mogelijkheden.remove(elements) #verwijder uit lijst om duplicates te vermijden
+                    duplicates.append(elements) #voeg de al gebruikt mogelijkheden toe
+                elif (self.symbol.decl.arity == 1 and elements[0] in mogelijkheden): #als func met 1arg
+                    mogelijkheden.remove(elements[0]) #verwijder uit lijst om duplicates te vermijden
+                    duplicates.append(elements[0]) #voeg de al gebruikt mogelijkheden toe
+                elif (elements in duplicates or elements[0] in duplicates): # als duplicates
+                        fouten.append((t.args[0],f"Wrong input elements, duplicate","Error"))  #duplicate
 
-                if (len(mogelijkheden) > 0): #als functie niet volledig 
-                    fouten.append((self,f"Function not total defined, missing elements","Error"))
+            if (len(mogelijkheden) > 0 and self.symbol.decl.arity == 1): #als functie niet voledig
+                    fouten.append((self,f"Function not total defined, missing {mogelijkheden}","Error"))
+            elif len(mogelijkheden) > 0: #als functie niet volledig
+                fouten.append((self,f"Function not total defined, missing elements","Error"))
 
 
 class Enumeration(ASTNode):
@@ -1081,7 +1061,7 @@ class Enumeration(ASTNode):
             return out
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for t in self.tuples:
             t.printAST(spaties+5)
 
@@ -1134,7 +1114,7 @@ class Tuple(ASTNode):
         return self.code
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for a in self.args:
             a.printAST(spaties+5)
 
@@ -1324,7 +1304,7 @@ class Procedure(ASTNode):
         return f"{NEWL.join(str(s) for s in self.pystatements)}"
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self.name) 
+        print(spaties*" "+type(self).__name__+": ",self.name)
         for a in self.pystatements:
             a.printAST(spaties+5)
 
@@ -1350,16 +1330,16 @@ class Call1(ASTNode):
                  f"{'' if self.post is None else '.'+str(self.post)}")
 
     def printAST(self,spaties):
-        print(spaties*" "+type(self).__name__+": ",self) 
+        print(spaties*" "+type(self).__name__+": ",self)
         for a in self.args:
             a.printAST(spaties+5)
 
     def SCA_Check(self,fouten):
         lijst_inferenties = ["model_check","model_expand","model_propagate"]
-        if (self.name in lijst_inferenties):
-            if (self.parent.name != "pretty_print"):    #check if pretty_print is used
+        if self.name in lijst_inferenties:
+            if self.parent.name != "pretty_print":    #check if pretty_print is used
                 fouten.append((self,f"No pretty_print used!","Warning"))
-        if (self.name == "model_check"):  #check if correct amount of arguments used by model_check
+        if self.name == "model_check":  #check if correct amount of arguments used by model_check
             if (len(self.args) > 2 or len(self.args) == 0):
                 fouten.append((self,f"Wrong number of arguments for model_check: given {len(self.args)} <-> expected {1} or {2}","Error"))
             else :
@@ -1368,7 +1348,7 @@ class Call1(ASTNode):
                     a = a.parent
                 for i in self.args:
                     if not(a.blockNameCheck(i)):   #check of block naam bestaat
-                        fouten.append((i,f"Block {i} does not exist!","Error"))    
+                        fouten.append((i,f"Block {i} does not exist!","Error"))
 
         for a in self.args:
             a.SCA_Check(fouten)

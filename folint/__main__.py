@@ -1,5 +1,6 @@
 # __main__.py
 import sys
+import re
 import argparse
 import time
 from fileinput import filename
@@ -48,29 +49,31 @@ def doe_de_check(A):
             errors.append(i)
     output(errors,"Error")      #output errors
     output(warnings,"Warning")  #output warnings
+    return len(fouten)
 
 def sca(idp):
+    aantal = 0
     print("\n---------- Vocabulary Check ----------")
     for v in idp.vocabularies:      #check all vocabularies
         print("-----",v)
         V = idp.get_blocks(v)       #get vocabulary block
-        doe_de_check(V[0])          #check
+        aantal += doe_de_check(V[0])          #check
     print("\n---------- Structure Check ----------")
     for s in idp.structures:        #check all structures
         print("-----",s)
         V = idp.get_blocks(s)       #get structure block
-        doe_de_check(V[0])          #check
+        aantal += doe_de_check(V[0])          #check
     print("\n---------- Theory Check ----------")
     for t in idp.theories:          #check all theories
         print("-----",t)
         T = idp.get_blocks(t)       #get theory block
-        doe_de_check(T[0])          #check
+        aantal += doe_de_check(T[0])          #check
     print("\n---------- Procedure Check ----------")
     for p in idp.procedures:        #check all procedures
         print("-----",p)
         P = idp.get_blocks(p)       #get procedure block
-        doe_de_check(P[0])          #check
-
+        aantal += doe_de_check(P[0])          #check
+    return aantal
 
 def extra(file):
     f = open(file, "r")     #open file
@@ -78,6 +81,7 @@ def extra(file):
     extra_check(f,fouten)   #controleer op extra style guide fouten
     extra_output(fouten)    #output de gevonden fouten
     f.close()               #close file
+    return len(fouten)
 
 def extra_check(f,fouten) :
     pattern = re.compile("\s,\S?") # als voor de komma een spatie en na de komma geen of wel spatie
@@ -87,6 +91,8 @@ def extra_check(f,fouten) :
     unicode_symbols = ['⨯','→','𝔹','ℤ','ℝ','∀','∃','∈','∉','←','∧','∨','¬','⇒','⇔','⇐','≤','≠','≥']
     ascii_symbols = ['*','->','Bool','Int','Real','!','?',' in ',' not in ','<-','&','|','~','=>','<=>','<=','=<','~=','>=']
     lineNumber = 1
+    help_lines = []
+    duplicate_check = 0
     for line in f:
         # style guide regel: spaties niet voor/wel na de komma
         for match in re.finditer(pattern, line):
@@ -123,14 +129,26 @@ def extra_check(f,fouten) :
             elif any(symbol in line for symbol in ascii_symbols) and consistentie=="unicode":
                 fouten.append((lineNumber,0,4,"Style guide, stay consistent in use of unicode or ASCII symbols","Warning"))
 
+        # style guide regel: Geen dezelfde regels/lijnen
+        test_keywords = ["theory", "procedure"] #duplicates in structure en vocabulary worden door idp gemeld, net zoals duplicate bloknamen
+        if any(word in line for word in test_keywords) and duplicate_check==0:
+            help_lines.append(line)
+            duplicate_check = 1
+        elif (duplicate_check==1 and len(line.strip()) != 0):
+            if (line in help_lines):
+                fouten.append((lineNumber,0,len(line),"style guide, duplicate line","Warning"))
+            else:
+                help_lines.append(line)
+        if ('}' in line and duplicate_check==1):
+            duplicate_check = 0
+            help_lines = []
         lineNumber += 1
-
     return fouten
 
-def extra_output(fouten) :
+def extra_output(lijst) :
     """ Output of extra style guide warning in format 'warning: line .. - colStart .. - colEnd=> message' """
-    print("\n---------- Extra Style Guide Check ----------")
-    for i in fouten:
+    print(f"\n---------- Extra Style Guide Check: aantal = {len(lijst)} ----------")
+    for i in lijst:
         if argfilename :
             print(f"{filename}: {i[4]}: line {i[0]} - colStart {i[1]} - colEnd {i[2]} => {i[3]}")
         else:
@@ -154,15 +172,17 @@ def main():
     try:
         global filename
         global argfilename
+        totaal = 0
         filename = sys.argv[1]
         argfilename = args.filename
         if sys.argv[1].endswith(".idp"):
             idp = IDP.from_file(sys.argv[1])    # parse idp file to AST
             if args.AST:
                 idp.printAST(0)                 # print AST van file
-            sca(idp)                            # Voer SCA uit
+            totaal += sca(idp)                            # Voer SCA uit
             if args.extra:
-                extra(filename)                 # Extra style guide checking
+                totaal += extra(filename)                 # Extra style guide checking
+            print(f"\n---------- Totaal aantal fouten {totaal} ----------")
         else:
             print("Expected an .idp file")
     except IDPZ3Error as e1:
@@ -179,6 +199,7 @@ def main():
         else :
             print(f"Error: line {0} - colStart {0} - colEnd {0} => Key Error {e2}")
     except Exception as e:
+        print(e)
         print("\n---------- Syntax Error ----------")
         try:
             if args.filename :
@@ -196,4 +217,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
