@@ -7,9 +7,8 @@ Documentation about FO(·) (https://fo-dot.readthedocs.io/en/latest/FO-dot.html)
 
 Source code FOLint (https://github.com/larsver/folint)
 
-Install
+Installation
 -------
-FOLint can be simply installed by running::
 
     pip install folint
 
