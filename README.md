@@ -5,14 +5,13 @@ FOLint is a linting tool for FO(·) which looks for errors and helps enforcing a
 
 Documentation about FO(·) (https://fo-dot.readthedocs.io/en/latest/FO-dot.html)
 
+Source code FOLint (https://github.com/larsver/folint)
 
 Install
 -------
-Currently FOLint only available on testPyPI (https://test.pypi.org/project/folint/)
-
 FOLint can be simply installed by running::
 
-    pip install -i https://test.pypi.org/simple/ folint
+    pip install folint
 
 
 FOLint in editors
