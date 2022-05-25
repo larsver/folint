@@ -15,4 +15,4 @@ Installation
 
 FOLint in editors
 -------
-Use of folint in editors, see folder folint-in-editors.
+Use of folint in editors, see folder folint-in-editors (https://github.com/larsver/folint)).

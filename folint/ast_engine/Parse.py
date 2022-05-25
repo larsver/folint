@@ -53,17 +53,7 @@ from .utils import (RESERVED_SYMBOLS, OrderedSet, NEWL, BOOL, INT, REAL, DATE, C
                     CO_CONSTR_RECURSION_DEPTH, MAX_QUANTIFIER_EXPANSION)
 
 ###############
-# help imports en functies
-from pprint import pp, pprint
-from inspect import getmembers
-from types import FunctionType
-def attributes(obj):    #geeft al de attributen van een object
-    disallowed_names = {
-        name for name, value in getmembers(type(obj))
-        if isinstance(value, FunctionType)}
-    return {
-        name: getattr(obj, name) for name in dir(obj)
-        if name[0] != '_' and name not in disallowed_names and hasattr(obj, name)}
+#help functies voor SCA
 def builtIn_type(elem):     #kijkt of het meegegeven type builtIn type is (return true or false)
     listOfSbuildIn = ["ℤ" , "𝔹", "ℝ", "Concept", "Int", "Bool", "Real", "Date"]
     return elem in listOfSbuildIn

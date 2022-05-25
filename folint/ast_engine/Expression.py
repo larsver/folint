@@ -40,18 +40,8 @@ from typing import Optional, List, Tuple, Dict, Set, Any
 from .utils import unquote, OrderedSet, BOOL, INT, REAL, DATE, CONCEPT, RESERVED_SYMBOLS, \
     IDPZ3Error, DEF_SEMANTICS, Semantics
 
-#help imports en functies voor SCA
+#help functies voor SCA
 #####################################################
-from pprint import pprint
-from inspect import getmembers
-from types import FunctionType
-def attributes(obj):    #help functie om attributen van object uit te printen met pprint
-    disallowed_names = {
-        name for name, value in getmembers(type(obj))
-        if isinstance(value, FunctionType)}
-    return {
-        name: getattr(obj, name) for name in dir(obj)
-        if name[0] != '_' and name not in disallowed_names and hasattr(obj, name)}
 def typeSymbol_to_String(type1):    # zet type symbol om in str
     if type1 == "ℤ":
         return "Int"

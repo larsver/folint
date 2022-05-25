@@ -4,22 +4,10 @@ import re
 import argparse
 import time
 from fileinput import filename
-from pprint import pprint
-from inspect import getmembers
-from types import FunctionType
 from textx import get_location
 
 from .ast_engine.Parse import IDP
 from .ast_engine.utils import IDPZ3Error
-
-def attributes(obj):
-    """return attributes of given object"""
-    disallowed_names = {
-      name for name, value in getmembers(type(obj))
-        if isinstance(value, FunctionType)}
-    return {
-      name: getattr(obj, name) for name in dir(obj)
-        if name[0] != '_' and name not in disallowed_names and hasattr(obj, name)}
 
 def output(lijst,soort):
     """Output of error/warning in format 'warning/error: line .. - colStart .. - colEnd=> message' """
