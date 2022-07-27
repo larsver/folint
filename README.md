@@ -1,3 +1,6 @@
+folint integrated in the IDP-Z3 system see : https://gitlab.com/krr/IDP-Z3
+
+
 README for FOLint 
 =============================================
 
